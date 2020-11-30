@@ -2,6 +2,8 @@ import datetime
 from web import models
 from .base import BootStrapModelForm
 from django import forms
+
+
 class TaskModelForm(BootStrapModelForm):
     exclude_bootstrap = [
         "before_download_template",
@@ -9,7 +11,7 @@ class TaskModelForm(BootStrapModelForm):
         'before_deploy_template',
         'after_deploy_template'
     ]
-
+    # 补充扩展的form 字段
     before_download_select = forms.ChoiceField(required=False, label='下载前')
     before_download_title = forms.CharField(required=False, label='模板名称')
     before_download_template = forms.BooleanField(required=False, widget=forms.CheckboxInput, label='是否保存为模板')
@@ -28,29 +30,29 @@ class TaskModelForm(BootStrapModelForm):
 
     class Meta:
         model = models.DeployTask
-        exclude = ['uid','project','status',]
+        exclude = ['uid', 'project', 'status', ]
 
-    def __init__(self,project_object,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, project_object, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.project_object = project_object
         self.init_hook()
 
     def init_hook(self):
-        before_download = [(0,'请选择'),]
-        before_download.extend(models.HookTemplate.objects.filter(hook_type=2).values_list('id','title'))
-        self.fields['before_download_select'].choices =before_download
+        before_download = [(0, '请选择'), ]
+        before_download.extend(models.HookTemplate.objects.filter(hook_type=2).values_list('id', 'title'))
+        self.fields['before_download_select'].choices = before_download
 
-        after_download = [(0,'请选择'),]
+        after_download = [(0, '请选择'), ]
         after_download.extend(models.HookTemplate.objects.filter(hook_type=4).values_list('id', 'title'))
-        self.fields['after_download_select'].choices =after_download
+        self.fields['after_download_select'].choices = after_download
 
         before_deploy = [(0, '请选择'), ]
         before_deploy.extend(models.HookTemplate.objects.filter(hook_type=6).values_list('id', 'title'))
-        self.fields['before_deploy_select'].choices =before_deploy
+        self.fields['before_deploy_select'].choices = before_deploy
 
         after_deploy = [(0, '请选择'), ]
         after_deploy.extend(models.HookTemplate.objects.filter(hook_type=8).values_list('id', 'title'))
-        self.fields['after_deploy_select'].choices =after_deploy
+        self.fields['after_deploy_select'].choices = after_deploy
 
     def save(self, commit=True):
         # 保存:当前发布任务单的表
@@ -59,50 +61,52 @@ class TaskModelForm(BootStrapModelForm):
         super().save(commit)
 
         # 模板钩子
+        # 保存模板
         if self.cleaned_data.get('before_download_template'):
             title = self.cleaned_data.get('before_download_title')
             content = self.cleaned_data.get('before_download_script')
-            models.HookTemplate.objects.create(title=title,content=content,hook_type=2)
+            models.HookTemplate.objects.create(title=title, content=content, hook_type=2)
 
         if self.cleaned_data.get('after_download_template'):
             title = self.cleaned_data.get('after_download_title')
             content = self.cleaned_data.get('after_download_script')
-            models.HookTemplate.objects.create(title=title,content=content,hook_type=4)
+            models.HookTemplate.objects.create(title=title, content=content, hook_type=4)
 
         if self.cleaned_data.get('before_deploy_template'):
             title = self.cleaned_data.get('before_deploy_title')
             content = self.cleaned_data.get('before_deploy_script')
-            models.HookTemplate.objects.create(title=title,content=content,hook_type=6)
+            models.HookTemplate.objects.create(title=title, content=content, hook_type=6)
 
         if self.cleaned_data.get('after_deploy_template'):
             title = self.cleaned_data.get('after_deploy_title')
             content = self.cleaned_data.get('after_deploy_script')
-            models.HookTemplate.objects.create(title=title,content=content,hook_type=8)
+            models.HookTemplate.objects.create(title=title, content=content, hook_type=8)
 
     def create_uid(self):
         title = self.project_object.title
         env = self.project_object.env
         tag = self.cleaned_data.get('tag')
         date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        return "{0}-{1}-{2}-{3}".format(title,env,tag,date)
+        return "{0}-{1}-{2}-{3}".format(title, env, tag, date)
 
     def clean(self):
+        """如果有数据就进行校验，没有数据就不校验"""
         if self.cleaned_data.get('before_download_template'):
             title = self.cleaned_data.get('before_download_title')
             if not title:
-                self.add_error("before_download_title",'请输入模板名称')
+                self.add_error("before_download_title", '请输入模板名称')
 
         if self.cleaned_data.get('after_download_template'):
             title = self.cleaned_data.get('after_download_title')
             if not title:
-                self.add_error("after_download_title",'请输入模板名称')
+                self.add_error("after_download_title", '请输入模板名称')
 
         if self.cleaned_data.get('before_deploy_template'):
             title = self.cleaned_data.get('before_deploy_title')
             if not title:
-                self.add_error("before_deploy_title",'请输入模板名称')
+                self.add_error("before_deploy_title", '请输入模板名称')
 
         if self.cleaned_data.get('after_deploy_template'):
             title = self.cleaned_data.get('after_deploy_title')
             if not title:
-                self.add_error("after_deploy_title",'请输入模板名称')
+                self.add_error("after_deploy_title", '请输入模板名称')
