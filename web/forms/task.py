@@ -30,7 +30,7 @@ class TaskModelForm(BootStrapModelForm):
 
     class Meta:
         model = models.DeployTask
-        exclude = ['uid', 'project', 'status', ]
+        exclude = ['uid', 'project', 'status', ]  # 表示这个几个字段可以不用生成表单交给前端填写
 
     def __init__(self, project_object, *args, **kwargs):
         super().__init__(*args, **kwargs)

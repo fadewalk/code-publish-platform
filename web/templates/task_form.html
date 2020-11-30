@@ -266,7 +266,7 @@
                         </div>
 
                         <div class="col-md-6">
-                           <div class="panel panel-default">
+                            <div class="panel panel-default">
                                 <div class="panel-heading">06 发布前</div>
                                 <div class="panel-body form-horizontal">
 
@@ -353,10 +353,10 @@
         $(".hooks").find('select').change(function () {
             var that = $(this);
             $.ajax({
-                url: '/hook/template/'+ $(this).val() + '/',
-                type:'GET',
-                dataType:'JSON',
-                success:function (res) {
+                url: '/hook/template/' + $(this).val() + '/',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
                     that.parent().parent().next().find('textarea').val(res.content);
                 }
             })
